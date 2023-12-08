@@ -17,7 +17,7 @@ class DBClient {
         this.usersCollection = this.db.collection('users');
         this.filesCollection = this.db.collection('files');
       } else {
-        console.log(err.message);
+        console.error('MongoDB connection error:', err.message);
         this.db = false;
       }
     });
@@ -36,8 +36,13 @@ class DBClient {
    * @return {number} amount of users
    */
   async nbUsers() {
-    const numberOfUsers = this.usersCollection.countDocuments();
-    return numberOfUsers;
+    try {
+      const numberOfUsers = await this.usersCollection.countDocuments();
+      return numberOfUsers;
+    } catch (err) {
+      console.error('Error counting users:', err.message);
+      throw err; // this re throws the error to be caught by the caller
+    }
   }
 
   /**
@@ -45,8 +50,13 @@ class DBClient {
    * @return {number} amount of files
    */
   async nbFiles() {
-    const numberOfFiles = this.filesCollection.countDocuments();
-    return numberOfFiles;
+    try {
+      const numberOfFiles = await this.filesCollection.countDocuments();
+      return numberOfFiles;
+    } catch (err) {
+      console.error('Error counting files:', err.message);
+      throw err;
+    }
   }
 }
 
