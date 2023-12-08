@@ -29,7 +29,7 @@ class AppController {
    * status code 200
    */
 
-  static async getStat(req, res) {
+  static async getStats(req, res) {
     const stats = {
       users: await dbClient.nbUsers(),
       files: await dbClient.nbFiles(),
