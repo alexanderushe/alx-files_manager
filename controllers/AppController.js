@@ -1,4 +1,5 @@
 import dbClient from '../utils/db';
+// eslint-disable-next-line import/no-named-as-default
 import redisClient from '../utils/redis';
 
 class AppController {
