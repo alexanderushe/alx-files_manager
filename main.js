@@ -1,3 +1,4 @@
+// eslint-disable-next-line import/no-named-as-default
 import dbClient from './utils/db';
 
 const waitConnection = () => new Promise((resolve, reject) => {

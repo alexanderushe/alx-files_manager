@@ -27,7 +27,7 @@ class AppController {
   /**
    * should return the {number} of users & files
    * in DB {'users: 12, 'files': 1231}
-   * status code 200
+   * status code 200.
    */
 
   static async getStats(req, res) {
