@@ -1,7 +1,9 @@
-// import { ObjectId } from 'mongodb';
+import { ObjectId } from 'mongodb';
 import sha1 from 'sha1';
 import { v4 as uuidv4 } from 'uuid';
 import dbClient from '../utils/db';
+// eslint-disable-next-line import/no-named-as-default
+import redisClient from '../utils/redis';
 // import userUtils from '../utils/user';
 
 class UsersController {
@@ -28,30 +30,36 @@ class UsersController {
     return res.status(201).json({ id: result.insertedId, email });
   }
 
-  //   /**
-  //    *
-  //    * Should retrieve the user base on the token used
-  //    *
-  //    * Retrieve the user based on the token:
-  //    * If not found, return an error Unauthorized with a
-  //    * status code 401
-  //    * Otherwise, return the user object (email and id only)
-  //    */
-  //   static async getMe(request, response) {
-  //     const { userId } = await userUtils.getUserIdAndKey(request);
+  static async getMe(req, res) {
+    const token = req.headers['x-token'];
+    if (!token) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
 
-  //     const user = await userUtils.getUser({
-  //       _id: ObjectId(userId),
-  //     });
+    const key = `auth_${token}`;
+    const userId = await redisClient.get(key);
 
-  //     if (!user) return response.status(401).send({ error: 'Unauthorized' });
+    if (!userId) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
 
-  //     const processedUser = { id: user._id, ...user };
-  //     delete processedUser._id;
-  //     delete processedUser.password;
+    let user;
+    try {
+      user = await dbClient.client
+        .db()
+        .collection('users')
+        .findOne({ _id: ObjectId(userId) });
+    } catch (err) {
+      console.error(err);
+      return res.status(500).json({ error: 'Internal Server Error' });
+    }
 
-//     return response.status(200).send(processedUser);
-//   }
+    if (!user) {
+      console.error(`User not found for id: ${userId}`);
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+    return res.status(200).json({ id: user._id, email: user.email });
+  }
 }
 
 export default UsersController;
